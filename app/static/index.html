@@ -1,0 +1,384 @@
+<!-- app/static/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redirect Mapper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#e9edef;
+  --surface:#ffffff;
+  --ink:#14202a;
+  --muted:#5d6e7a;
+  --rule:#c6d0d6;
+  --rule-soft:#dde4e8;
+  --strong:#0e6e52;
+  --fair:#8a6410;
+  --weak:#a6392e;
+  --strong-bg:#dff0e8;
+  --fair-bg:#f8eed4;
+  --weak-bg:#f8dedb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ---------- masthead ---------- */
+header{border-bottom:1px solid var(--rule);background:var(--surface)}
+.masthead{display:flex;align-items:baseline;gap:20px;flex-wrap:wrap;padding:28px 0 24px}
+h1{
+  font-size:31px;font-weight:700;letter-spacing:-.028em;margin:0;
+}
+.tagline{color:var(--muted);max-width:52ch;margin:0}
+
+/* ---------- intake ---------- */
+.intake{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+        border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin-top:28px}
+.panel{background:var(--surface);padding:22px}
+.panel h2{font-size:17px;font-weight:600;letter-spacing:-.012em;margin:0 0 4px}
+.panel p.help{color:var(--muted);font-size:13.5px;margin:0 0 16px;max-width:44ch}
+
+label{display:block;font-size:13.5px;font-weight:500;margin:0 0 6px}
+textarea,input[type=text]{
+  width:100%;font:inherit;font-size:14px;color:var(--ink);background:#fbfcfd;
+  border:1px solid var(--rule);border-radius:2px;padding:9px 11px;resize:vertical;
+}
+textarea{min-height:82px;line-height:1.45}
+textarea:focus,input:focus,.drop:focus-within{outline:2px solid var(--ink);outline-offset:1px}
+
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;margin:14px 0 12px}
+.or::before,.or::after{content:"";height:1px;background:var(--rule-soft);flex:1}
+
+.drop{
+  border:1px dashed var(--rule);border-radius:2px;background:#fbfcfd;
+  min-height:84px;display:flex;flex-direction:column;justify-content:center;
+  padding:18px;text-align:center;cursor:pointer;transition:background .12s,border-color .12s;
+}
+.drop:hover,.drop.over{background:#f2f7f5;border-color:var(--strong)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop .name{font-weight:500}
+.drop .hint{color:var(--muted);font-size:13px;margin-top:3px}
+
+/* ---------- action ---------- */
+.actionbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 0 30px}
+button{
+  font:inherit;font-weight:600;font-size:15px;border:1px solid var(--ink);
+  background:var(--ink);color:#fff;padding:10px 22px;border-radius:2px;cursor:pointer;
+}
+button:hover{background:#0b1620}
+button[disabled]{opacity:.45;cursor:not-allowed}
+button.quiet{background:transparent;color:var(--ink);border-color:var(--rule);font-weight:500}
+button.quiet:hover{background:#fff}
+.status{color:var(--muted);font-size:14px}
+.status.error{color:var(--weak);font-weight:500}
+
+/* ---------- results ---------- */
+.primer{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;padding:24px 0 60px;
+        border-top:1px solid var(--rule);color:var(--muted);font-size:13.5px;max-width:960px}
+.primer b{color:var(--ink);font-weight:600}
+.primer code{background:#dde4e8;padding:1px 4px;border-radius:2px;font-size:12.5px}
+.primer.off{display:none}
+@media (max-width:820px){.primer{grid-template-columns:1fr;gap:16px}}
+
+.results{display:none;padding-bottom:70px}
+.results.on{display:block}
+.summary{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--rule);border-radius:3px;
+         background:var(--surface);margin-bottom:20px}
+.stat{padding:16px 22px;border-right:1px solid var(--rule-soft);min-width:140px}
+.stat:last-child{border-right:none}
+.stat .n{font-size:25px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat .k{color:var(--muted);font-size:13px}
+.stat.s .n{color:var(--strong)} .stat.f .n{color:var(--fair)} .stat.w .n{color:var(--weak)}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.chip{font:inherit;font-size:13.5px;font-weight:500;border:1px solid var(--rule);background:var(--surface);
+      color:var(--muted);padding:6px 13px;border-radius:2px;cursor:pointer}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.spacer{flex:1}
+.toolbar input[type=text]{max-width:230px}
+
+table{width:100%;border-collapse:collapse;background:var(--surface);
+      border:1px solid var(--rule);font-size:13.5px}
+th{text-align:left;font-weight:600;font-size:13px;padding:11px 12px;
+   border-bottom:1px solid var(--rule);white-space:nowrap;background:#f4f7f8}
+td{padding:10px 12px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.path{word-break:break-all;line-height:1.4}
+.host{color:var(--muted)}
+td.conf{white-space:nowrap;font-variant-numeric:tabular-nums;width:104px}
+.bar{height:3px;background:var(--rule-soft);margin-top:5px;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%}
+.s .bar i{background:var(--strong)} .f .bar i{background:var(--fair)} .w .bar i{background:var(--weak)}
+.s .num{color:var(--strong)} .f .num{color:var(--fair)} .w .num{color:var(--weak)}
+.num{font-weight:600}
+.why{color:var(--muted);font-size:12.5px;margin-top:3px;
+     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.act{width:96px;white-space:nowrap}
+td.act button{padding:4px 10px;font-size:12.5px;font-weight:500;background:transparent;color:var(--muted);border-color:var(--rule)}
+td.act button:hover{color:var(--ink);background:#f4f7f8}
+tr.edited td.conf .num{color:var(--ink)}
+
+.log{margin-top:22px;font-size:13px;color:var(--muted)}
+.log ul{margin:6px 0 0;padding-left:18px}
+.empty{padding:34px;text-align:center;color:var(--muted);background:var(--surface);border:1px solid var(--rule)}
+@media (max-width:820px){
+  .intake{grid-template-columns:1fr}
+  .summary{flex-direction:column}
+  .stat{border-right:none;border-bottom:1px solid var(--rule-soft);width:100%}
+  .toolbar input[type=text]{max-width:none;flex:1 1 100%}
+
+  /* One card per redirect: the 404, then where it goes. */
+  table,tbody,tr,td{display:block;width:100%}
+  thead{display:none}
+  table{border:none;background:transparent}
+  tr{background:var(--surface);border:1px solid var(--rule);margin-bottom:8px;padding:12px 14px}
+  td{border:none;padding:0}
+  td.path:first-child{font-weight:500;padding-bottom:8px;margin-bottom:8px;
+                      border-bottom:1px solid var(--rule-soft)}
+  td.conf{width:auto;margin-top:10px;display:flex;align-items:center;gap:10px}
+  td.conf .bar{flex:1;margin-top:0}
+  td.act{margin-top:10px}
+  td.act button{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap masthead">
+    <h1>Redirect Mapper</h1>
+    <p class="tagline">Give it your sitemap and your list of 404s. It reads the words in each broken
+      path — brand names, product names, people — and finds the live page that carries the same ones.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="intake">
+    <div class="panel">
+      <h2>Live pages</h2>
+      <p class="help">Where the working URLs come from. A sitemap index is fine; its child files are followed.</p>
+      <label for="smurls">Sitemap URL</label>
+      <textarea id="smurls" placeholder="https://example.com/sitemap.xml&#10;one per line if you have several"></textarea>
+      <div class="or">or</div>
+      <div class="drop" id="smdrop" tabindex="0" role="button" aria-label="Choose sitemap files">
+        <input type="file" id="smfile" multiple accept=".xml,.gz,.txt">
+        <div class="name" id="smname">Choose sitemap files</div>
+        <div class="hint">.xml, .xml.gz or a plain URL list</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Broken pages</h2>
+      <p class="help">Your crawl export. Any column of URLs is detected automatically.</p>
+      <div class="drop" id="ddrop" tabindex="0" role="button" aria-label="Choose 404 file">
+        <input type="file" id="dfile" accept=".xlsx,.xlsm,.csv,.tsv,.txt">
+        <div class="name" id="dname">Choose your 404 file</div>
+        <div class="hint">.xlsx, .csv or .txt</div>
+      </div>
+      <div class="or">or</div>
+      <label for="dtext">Paste URLs</label>
+      <textarea id="dtext" placeholder="https://example.com/news/old-story/"></textarea>
+    </div>
+  </section>
+
+  <div class="actionbar">
+    <button id="run">Match URLs</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <section class="primer" id="primer">
+    <div><b>Every 404 gets a destination.</b> Where the words in a broken path line up exactly with a
+      live page, that page wins outright. Where they don't, the rarest shared words decide — a company
+      or product name outweighs a dozen ordinary words.</div>
+    <div><b>Wrappers are unpicked first.</b> A login URL carrying <code>redirect_to</code> is matched on
+      the page it was trying to reach, and <code>/amp/</code> paths are matched on the canonical page.</div>
+    <div><b>Tag and topic pages are marked for review.</b> They have no single article equivalent, so
+      they land on the nearest hub and show up under Needs review.</div>
+  </section>
+
+  <section class="results" id="results">
+    <div class="summary" id="summary"></div>
+
+    <div class="toolbar">
+      <button class="chip on" data-band="all">All</button>
+      <button class="chip" data-band="s">Confident</button>
+      <button class="chip" data-band="f">Likely</button>
+      <button class="chip" data-band="w">Needs review</button>
+      <input type="text" id="find" placeholder="Filter by word">
+      <span class="spacer"></span>
+      <button class="quiet" id="dlx">Download .xlsx</button>
+      <button class="quiet" id="dlc">Download .csv</button>
+      <button class="quiet" id="dln">Download nginx map</button>
+    </div>
+
+    <div id="tablewrap"></div>
+    <div class="log" id="log"></div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let ROWS = [], BAND = 'all';
+
+function band(score){ return score >= 85 ? 's' : score >= 60 ? 'f' : 'w'; }
+
+function wireDrop(dropId, inputId, nameId, label){
+  const drop = $(dropId), input = $(inputId), name = $(nameId);
+  const show = () => {
+    const n = input.files.length;
+    name.textContent = n === 0 ? label : n === 1 ? input.files[0].name : n + ' files selected';
+  };
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }});
+  input.addEventListener('change', show);
+  ['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => { input.files = e.dataTransfer.files; show(); });
+}
+wireDrop('#smdrop','#smfile','#smname','Choose sitemap files');
+wireDrop('#ddrop','#dfile','#dname','Choose your 404 file');
+
+function splitUrl(u){
+  try { const p = new URL(u); return [p.host, p.pathname + p.search]; }
+  catch { return ['', u]; }
+}
+
+function render(){
+  const needle = $('#find').value.trim().toLowerCase();
+  const rows = ROWS
+    .map((r,i) => ({...r, i}))
+    .filter(r => BAND === 'all' || band(r.score) === BAND)
+    .filter(r => !needle || (r.dead + ' ' + r.live).toLowerCase().includes(needle));
+
+  if (!rows.length){
+    $('#tablewrap').innerHTML = '<div class="empty">Nothing matches that filter.</div>';
+    return;
+  }
+
+  const body = rows.map(r => {
+    const b = band(r.score);
+    const [dh, dp] = splitUrl(r.dead), [lh, lp] = splitUrl(r.live);
+    const why = [r.method, r.matched_on && 'on “' + r.matched_on + '”', r.notes]
+                .filter(Boolean).map(esc).join(' · ');
+    return `<tr class="${b}${r.edited ? ' edited' : ''}">
+      <td class="path"><span class="host">${esc(dh)}</span>${esc(dp)}</td>
+      <td class="path">${r.live ? '<span class="host">'+esc(lh)+'</span>'+esc(lp) : '—'}
+        <div class="why">${why}</div></td>
+      <td class="conf"><span class="num">${r.score.toFixed(0)}</span>
+        <div class="bar"><i style="width:${Math.max(r.score,3)}%"></i></div></td>
+      <td class="act"><button data-edit="${r.i}">Change</button></td>
+    </tr>`;
+  }).join('');
+
+  $('#tablewrap').innerHTML = `<table>
+    <thead><tr><th>404</th><th>Goes to</th><th>Confidence</th><th class="act"></th></tr></thead>
+    <tbody>${body}</tbody></table>`;
+
+  $('#tablewrap').querySelectorAll('[data-edit]').forEach(btn => {
+    btn.addEventListener('click', () => editRow(+btn.dataset.edit));
+  });
+}
+
+function editRow(i){
+  const next = prompt('Send this 404 to:', ROWS[i].live);
+  if (next === null || next.trim() === ROWS[i].live) return;
+  ROWS[i] = { ...ROWS[i], live: next.trim(), score: 100, method: 'set by hand',
+              matched_on: '', edited: true };
+  render();
+}
+
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+  c.classList.add('on'); BAND = c.dataset.band; render();
+}));
+$('#find').addEventListener('input', render);
+
+$('#run').addEventListener('click', async () => {
+  const fd = new FormData();
+  fd.append('sitemap_urls', $('#smurls').value);
+  fd.append('dead_text', $('#dtext').value);
+  for (const f of $('#smfile').files) fd.append('sitemap_files', f);
+  if ($('#dfile').files[0]) fd.append('dead_file', $('#dfile').files[0]);
+
+  const status = $('#status');
+  status.className = 'status';
+  status.textContent = 'Reading the sitemap…';
+  $('#run').disabled = true;
+
+  try {
+    const res = await fetch('/api/match', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Something went wrong.');
+
+    ROWS = data.rows;
+    $('#summary').innerHTML = `
+      <div class="stat"><div class="n">${data.dead_count}</div><div class="k">404s in</div></div>
+      <div class="stat"><div class="n">${data.live_count.toLocaleString()}</div><div class="k">live URLs read</div></div>
+      <div class="stat s"><div class="n">${data.strong}</div><div class="k">confident</div></div>
+      <div class="stat f"><div class="n">${data.fair}</div><div class="k">likely</div></div>
+      <div class="stat w"><div class="n">${data.weak}</div><div class="k">needs review</div></div>`;
+    $('#log').innerHTML = data.log.length
+      ? '<div>What was read</div><ul>' + data.log.map(l => `<li>${esc(l)}</li>`).join('') + '</ul>' : '';
+    $('#results').classList.add('on');
+    $('#primer').classList.add('off');
+    render();
+    status.textContent = `${data.dead_count} URLs matched.`;
+    $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    status.className = 'status error';
+    status.textContent = err.message;
+  } finally {
+    $('#run').disabled = false;
+  }
+});
+
+async function download(path, fallbackName, button){
+  if (!ROWS.length) return;
+  const label = button.textContent;
+  button.disabled = true; button.textContent = 'Preparing…';
+  try {
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rows: ROWS.map(({dead, live, score, method, matched_on, notes}) =>
+                                            ({dead, live, score, method, matched_on, notes})) })
+    });
+    if (!res.ok) throw new Error('Export failed.');
+    const disp = res.headers.get('Content-Disposition') || '';
+    const named = /filename="([^"]+)"/.exec(disp);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = named ? named[1] : fallbackName;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  } catch (err) {
+    $('#status').className = 'status error';
+    $('#status').textContent = err.message;
+  } finally {
+    button.disabled = false; button.textContent = label;
+  }
+}
+
+$('#dlx').addEventListener('click', e => download('/api/export/xlsx', 'redirects.xlsx', e.target));
+$('#dlc').addEventListener('click', e => download('/api/export/csv', 'redirects.csv', e.target));
+$('#dln').addEventListener('click', e => download('/api/export/rules?flavour=nginx', 'nginx-map.conf', e.target));
+</script>
+</body>
+</html>
