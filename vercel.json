@@ -1,12 +1,12 @@
 {
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "app/**",
-      "maxDuration": 60,
-      "memory": 2048
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": { "includeFiles": ["app/**"] }
     }
-  },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "api/index.py" }
   ]
 }
