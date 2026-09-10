@@ -42,6 +42,22 @@ MAX_UPLOAD_BYTES = 4 * 1024 * 1024
 
 app = FastAPI(title="Redirect Mapper", docs_url="/api/docs", redoc_url=None)
 
+# Vercel rewrites every request to the function's own path, so a request for "/"
+# can arrive as "/api/index" and a request for "/api/match" as
+# "/api/index/api/match". Strip that prefix before routing runs. Off Vercel the
+# prefix is never present and this does nothing.
+VERCEL_PREFIX = "/api/index"
+
+
+@app.middleware("http")
+async def strip_platform_prefix(request, call_next):
+    path = request.scope.get("path", "/")
+    if path == VERCEL_PREFIX or path.startswith(VERCEL_PREFIX + "/"):
+        stripped = path[len(VERCEL_PREFIX):] or "/"
+        request.scope["path"] = stripped
+        request.scope["raw_path"] = stripped.encode()
+    return await call_next(request)
+
 
 class Row(BaseModel):
     dead: str = ""
@@ -281,4 +297,15 @@ async def export_rules(payload: ExportRequest, flavour: str = "nginx"):
 
 @app.get("/")
 async def home():
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/{path:path}")
+async def anything_else(path: str):
+    """
+    Last resort. Declared after every real route, so it only sees paths nothing
+    else claimed. Any non-API path gets the interface rather than a JSON 404.
+    """
+    if path.startswith("api/"):
+        raise HTTPException(404, f"No endpoint at /{path}")
     return FileResponse(STATIC_DIR / "index.html")
